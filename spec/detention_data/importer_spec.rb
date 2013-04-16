@@ -155,5 +155,26 @@ describe DetentionData::Importer do
       end
     end
 
+    describe "['misreported_self_harm']" do
+
+      context "with any text saying self harm but not reported as self-harm" do
+
+        let!(:original_row){ {'Location' => '  self harm  ' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['misreported_self_harm'] }
+        it{ should be_true  }
+      end
+    end
+
+    describe "['incident_references']" do
+
+      context "with any reference to incident ids that are not the current incident id" do
+
+        let!(:original_row){ {'Incident Number' => '1-2PQQH5', 
+          'Location Details' => 'Refers to 1-2RX4AZ. Not a reference no: 1-7 and 1-2342342423432',
+          'Summary' => 'Refers to 1-2RG4EW.1-2RG4EW. 16-01-2011' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['incident_references'] }
+        it{ should == '1-2RX4AZ,1-2RG4EW'  }
+      end
+    end
   end
 end

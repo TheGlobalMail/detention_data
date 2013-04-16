@@ -1,3 +1,5 @@
+require 'csv'
+
 module DetentionData::Importer
 
   def self.cleanCSV(csv_path, cleaned_csv_path)
@@ -5,7 +7,11 @@ module DetentionData::Importer
     input = File.open csv_path, 'r'
     output = File.open cleaned_csv_path, 'w'
     CSV.filter input, output, options do |row|
-      row = clean_row(row) unless row.header_row?()
+      if row.header_row?()
+        add_new_headers(row)
+      else
+        row = clean_row(row)
+      end
     end
   end
 
@@ -16,10 +22,23 @@ module DetentionData::Importer
     row['offshore'] = add_offshore(row['location'])
     row['occurred_on'] = add_occurrend_on(row['Occurred On'])
     row['facility_type'] = add_facility_type(row['location'])
+    row['misreported_self_harm'] = add_misreported_self_harm(row)
+    row['incident_references'] = add_incident_references(row)
     row
   end
 
   protected
+
+  def self.add_new_headers(row)
+    new_headers.each do |header|
+      row[header] = header
+    end
+  end
+
+  def self.new_headers()
+    ['incident_type', 'location', 'incident_category', 'offshore',
+      'occurred_on', 'facility_type', 'misreported_self_harm']
+  end
 
   def self.clean_location(value)
     if value =~ /Berrimah Accommodation Facility Minor Client/
@@ -83,11 +102,34 @@ module DetentionData::Importer
 
   def self.facility_types
     [
-      {name: 'idc', re: /christmas| idc|northern|sa detention/},
+      {name: 'idc', re: /christmas| idc|north|sa detention|berrimah/},
       {name: 'irh', re: / irh/},
       {name: 'apod', re: / apod|phosphate|aqua|lilac/},
       {name: 'ita', re: / ita/},
     ]
+  end
+
+  def self.add_misreported_self_harm(row)
+    !!(
+      ['location', 'Location Details', 'Summary'].detect{|col|
+        row[col] =~ /self[- ]harm|harm himself|harm herself|harm themsel/i
+      } && row['incident_category'] != 'self-harm'
+    ) 
+  end
+
+  def self.add_incident_references(row)
+    references = []
+    id = row['Incident Number'] && row['Incident Number'].strip
+    return unless id
+    ['location', 'Location Details', 'Summary'].each do |col|
+      next unless row[col]
+      row[col].scan(/1-[\w]{5,}/).each do |reference|
+        if reference != id && reference.length < 9
+          references << reference
+        end
+      end
+    end
+    references.uniq.join(',')
   end
 
 end
