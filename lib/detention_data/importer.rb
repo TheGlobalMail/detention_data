@@ -30,6 +30,7 @@ module DetentionData::Importer
   protected
 
   def self.add_new_headers(row)
+    row['Version'] = 'Version2'
     new_headers.each do |header|
       row[header] = header
     end
@@ -37,11 +38,13 @@ module DetentionData::Importer
 
   def self.new_headers()
     ['incident_type', 'location', 'incident_category', 'offshore',
-      'occurred_on', 'facility_type', 'misreported_self_harm']
+      'occurred_on', 'facility_type', 'misreported_self_harm',
+      'incident_references'
+    ]
   end
 
   def self.clean_location(value)
-    if value =~ /Berrimah Accommodation Facility Minor Client/
+    if value =~ /Minor Client/i
       value = 'berrimah accommodation facility'
     end
     if value =~ /\wIDC/
@@ -66,20 +69,15 @@ module DetentionData::Importer
 
   def self.categories
     [
-      {name: 'media', re: /media/},
-      {name: 'assault', re: /assault|aggressive behaviour|weapon/},
-      {name: 'disturbance', re: /disturbance|notification by welfare/},
+      {name: 'media or protest', re: /media|threat-bomb|demonstration - offsite/},
+      {name: 'violence', re: /assault|aggressive behaviour|weapon|use of force|use of restraint/},
+      {name: 'disturbance or damage', re: /disturbance|notification by welfare|damage|property|theft|contraband/},
       {name: 'complaint', re: /complaint/},
-      {name: 'contraband', re: /contraband/},
-      {name: 'damage', re: /damage|property|theft/},
-      {name: 'external-protest', re: /threat-bomb|demonstration - offsite/},
-      {name: 'protest', re: /protest|riot|voluntary starvation|barricade|demonstration - onsite/},
-      {name: 'force', re: /use of force|use of restraint/},
-      {name: 'escape', re: /escape/},
+      {name: 'protest', re: /protest|riot|voluntary starvation|barricade|demonstration - onsite|escape/},
       {name: 'complaint', re: /complaint/},
       {name: 'injury', re: /death|emergency|infection|birth|accident|poisoning|public health risk/},
       {name: 'self-harm', re: /self harm/},
-      {name: 'admin', re: /^transfer |failure|removal - aborted|use of observation|visitor/},
+      #{name: 'admin', re: /^transfer |failure|removal - aborted|use of observation|visitor/},
     ]
   end
 
@@ -90,7 +88,7 @@ module DetentionData::Importer
   end
 
   def self.add_occurrend_on(date)
-    date && Date.parse(date)
+    date && Date.strptime(date, '%d/%m/%y')
   end
 
   def self.add_facility_type(location)

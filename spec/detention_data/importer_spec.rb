@@ -63,19 +63,19 @@ describe DetentionData::Importer do
       context "with an incident type with media in it" do
         let!(:original_row){ {'Type' => ' Media - Approach staff/clients  ' } }
         subject{ DetentionData::Importer.clean_row(original_row)['incident_category'] }
-        it{ should === 'media' }
+        it{ should === 'media or protest' }
       end
 
       context "with an incident type with aggressive behaviour in it" do
         let!(:original_row){ {'Type' => ' Abusive/Aggressive Behaviour' } }
         subject{ DetentionData::Importer.clean_row(original_row)['incident_category'] }
-        it{ should === 'assault' }
+        it{ should === 'violence' }
       end
 
       context "with an incident type with property in it" do
         let!(:original_row){ {'Type' => 'Property - Missing' } }
         subject{ DetentionData::Importer.clean_row(original_row)['incident_category'] }
-        it{ should === 'damage' }
+        it{ should === 'disturbance or damage' }
       end
 
       context "with an incident type with demonstration - onsite" do
@@ -104,7 +104,7 @@ describe DetentionData::Importer do
     describe "['occured_on']" do
 
       context "with an australian formatted date" do
-        let!(:original_row){ {'Occurred On' => '2012-03-09' } }
+        let!(:original_row){ {'Occurred On' => '09/03/12' } }
         subject{ DetentionData::Importer.clean_row(original_row)['occurred_on'] }
         it{ should == Date.new(2012, 3, 9) }
       end

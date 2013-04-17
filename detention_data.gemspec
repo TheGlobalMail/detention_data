@@ -11,4 +11,5 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{Importer for Detention Incident Data}
   s.add_development_dependency 'rspec'
+  s.add_dependency 'mechanize'
 end
