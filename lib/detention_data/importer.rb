@@ -45,6 +45,9 @@ module DetentionData::Importer
   end
 
   def self.clean_location(value)
+    if value =~ /christmas island/i
+      value = 'north west point immigration facility'
+    end
     if value =~ /Minor Client/i
       value = 'berrimah accommodation facility'
     end

@@ -60,6 +60,13 @@ describe DetentionData::Importer do
         subject{ DetentionData::Importer.clean_row(original_row)['location'] }
         it{ should === 'maribyrnong idc' }
       end
+
+      context "with the location 'Christmas Island'" do
+
+        let!(:original_row){ {'Location' => ' Christmas Island ' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['location'] }
+        it{ should === 'north west point immigration facility' }
+      end
     end
 
     describe "['incident_type']" do
