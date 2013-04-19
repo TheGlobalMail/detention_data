@@ -14,6 +14,7 @@ the data:
   `Type` was not `self-harm`. This is not definitive. Often there are multiple
   incident reports surround the actual incident.
 * `incident_references`: any other incidents mentioned in the text
+* `contraband_category`: groupings for contraband
 
 Install by putting the following in your Gemfile:
 

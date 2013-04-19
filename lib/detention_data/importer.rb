@@ -25,6 +25,7 @@ module DetentionData::Importer
     row['facility_type'] = add_facility_type(row['location'])
     row['misreported_self_harm'] = add_misreported_self_harm(row)
     row['incident_references'] = add_incident_references(row)
+    row['contraband_category'] = add_contraband_category(row)
     row
   end
 
@@ -137,6 +138,36 @@ module DetentionData::Importer
       end
     end
     references.uniq.join(',')
+  end
+
+  def self.contraband_categories
+    [
+      {name: 'alcohol', re: /alcohol|fermented|fermenting|wine|jamisons|gin |jack danials|spirit|home brew|vodka|johnnie walker|rotten fruit|hooch/i},
+      {name: 'phone-or-camera', re: /phone|camera/i},
+      {name: 'pornography', re: / porn/i},
+      {name: 'noose', re: /noose/i},
+      {name: 'weapon', re: /nail clippers|nail|scissors|Mirror|Knife|sharp|sharps|ceramic cup|screwdriver|pliers|work tools|stapler|razor blades|razor/i},
+      #{name: 'noose'}- rope / bed sheet / noose
+
+      #- Syringe / nail clippers / nail / scissors / Mirror / Knife / sharp / sharps / ceramic cup / screwdriver / pliers / work tools / stapler / razor blades / razor 
+
+      #- plant / cannabis
+
+      #- aerosol / breath spray
+
+      #- medication / pill / cough mixture / tablets / bong
+
+      #- pool que / pool cue / metal vacuum cleaner pipe
+
+      #- tools of escape / step ladder
+    ]
+  end
+
+  def self.add_contraband_category(row)
+    contraband_category = contraband_categories.detect{|type|
+      row['Summary'] && row['Summary'] =~ type[:re]
+    }
+    contraband_category ? contraband_category[:name]: 'other'
   end
 
 end
