@@ -16,8 +16,9 @@ module DetentionData::Importer
   end
 
   def self.clean_row(row)
+    row['Incident Number'] = remove_null(row['Incident Number'])
     row['incident_type'] = clean_incident_type(row['Type'])
-    row['location'] = clean_location(row['Location'])
+    row['location'] = remove_null(clean_location(row['Location']))
     row['incident_category'] = add_incident_category(row['incident_type'])
     row['offshore'] = add_offshore(row['location'])
     row['occurred_on'] = add_occurrend_on(row['Occurred On'])
@@ -51,6 +52,10 @@ module DetentionData::Importer
       value.gsub!(/IDC/, ' IDC')
     end
     value && value.downcase.strip.gsub(/\s+/, ' ')
+  end
+
+  def self.remove_null(value)
+    return value && value.gsub(/ *null/i, '')
   end
 
   def self.clean_incident_type(value)
@@ -88,7 +93,7 @@ module DetentionData::Importer
   end
 
   def self.add_occurrend_on(date)
-    date && Date.strptime(date, '%d/%m/%y')
+    date && Date.strptime(date, '%m/%d/%Y')
   end
 
   def self.add_facility_type(location)

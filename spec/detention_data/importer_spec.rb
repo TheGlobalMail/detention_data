@@ -32,6 +32,13 @@ describe DetentionData::Importer do
         subject{ DetentionData::Importer.clean_row(original_row)['location'] }
         it{ should === 'some where' }
       end
+      
+      context "with a location with 'null' in it" do
+
+        let!(:original_row){ {'Location' => '  some wherenull' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['location'] }
+        it{ should === 'some where' }
+      end
 
       context "with a location missing a space before IDC" do
 
@@ -101,10 +108,19 @@ describe DetentionData::Importer do
 
     end
 
+    describe "['Incident Number']" do
+
+      context "with a null in the id" do
+        let!(:original_row){ {'Incident Number' => '1-79RZQA  null' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['Incident Number'] }
+        it{ should == '1-79RZQA' }
+      end
+    end
+
     describe "['occured_on']" do
 
       context "with an australian formatted date" do
-        let!(:original_row){ {'Occurred On' => '09/03/12' } }
+        let!(:original_row){ {'Occurred On' => '03/09/2012' } } # U.S. style
         subject{ DetentionData::Importer.clean_row(original_row)['occurred_on'] }
         it{ should == Date.new(2012, 3, 9) }
       end
