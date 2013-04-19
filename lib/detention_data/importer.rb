@@ -41,7 +41,7 @@ module DetentionData::Importer
   def self.new_headers()
     ['incident_type', 'location', 'incident_category', 'offshore',
       'occurred_on', 'facility_type', 'misreported_self_harm',
-      'incident_references'
+      'incident_references', 'contraband_category'
     ]
   end
 
