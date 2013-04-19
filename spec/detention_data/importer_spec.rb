@@ -32,6 +32,13 @@ describe DetentionData::Importer do
         subject{ DetentionData::Importer.clean_row(original_row)['location'] }
         it{ should === 'some where' }
       end
+
+      context "with a date accidently put in there" do
+
+        let!(:original_row){ {'Location' => '21/02/2010  some where  ' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['location'] }
+        it{ should === 'some where' }
+      end
       
       context "with a location with 'null' in it" do
 

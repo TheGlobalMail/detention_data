@@ -51,7 +51,8 @@ module DetentionData::Importer
     if value =~ /\wIDC/
       value.gsub!(/IDC/, ' IDC')
     end
-    value && value.downcase.strip.gsub(/\s+/, ' ')
+    value && value.downcase.strip
+      .gsub(/\s+/, ' ').gsub(/\d+\/\d+\/\d+ +/, '')
   end
 
   def self.remove_null(value)
