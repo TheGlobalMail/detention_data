@@ -199,5 +199,14 @@ describe DetentionData::Importer do
         it{ should == '1-2RX4AZ,1-2RG4EW'  }
       end
     end
+
+    describe "['contraband_category']" do
+
+      context "with an alcohol reference in the Summary" do
+        let!(:original_row){ {'Summary' => 'made me some hooch' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['contraband_category'] }
+        it{ should == 'alcohol' }
+      end
+    end
   end
 end
