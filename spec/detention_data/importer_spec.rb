@@ -215,5 +215,27 @@ describe DetentionData::Importer do
         it{ should == 'alcohol' }
       end
     end
+
+    describe "['interest']" do
+
+      ['disturbance-minor', 'assualt-minor', 'damage-minor', 'transfer to apod', 
+        'use of observation rm > 24 hrs', 'failure - it systems'].each do |incident_type|
+
+        context "with the less interesting category e.g. #{incident_type}" do
+          let!(:original_row){ { 'Type' => incident_type } }
+          subject{ DetentionData::Importer.clean_row(original_row)['interest'] }
+          it{ should be_false }
+        end
+      end
+
+      ['self-harm'].each do |incident_type|
+
+        context "with an interesting category e.g. #{incident_type}" do
+          let!(:original_row){ { 'Type' => incident_type } }
+          subject{ DetentionData::Importer.clean_row(original_row)['interest'] }
+          it{ should be_true }
+        end
+      end
+    end
   end
 end

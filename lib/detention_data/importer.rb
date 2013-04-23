@@ -26,6 +26,7 @@ module DetentionData::Importer
     row['misreported_self_harm'] = add_misreported_self_harm(row)
     row['incident_references'] = add_incident_references(row)
     row['contraband_category'] = add_contraband_category(row)
+    row['interest'] = add_interest(row)
     row
   end
 
@@ -168,6 +169,10 @@ module DetentionData::Importer
       row['Summary'] && row['Summary'] =~ type[:re]
     }
     contraband_category ? contraband_category[:name]: 'other'
+  end
+
+  def self.add_interest(row)
+    row['incident_type'] && row['incident_type'] !~ /-minor|transfer|use of ob|failure/mi
   end
 
 end
