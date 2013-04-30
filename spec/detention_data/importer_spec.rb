@@ -16,7 +16,7 @@ describe DetentionData::Importer do
 
       it "should put the cleaned data in the output file" do
         clean_csv_data = CSV.read(cleaned_csv_path, { headers: true })
-        clean_csv_data.length.should == 10
+        clean_csv_data.length.should == 8 
       end
     end
   end

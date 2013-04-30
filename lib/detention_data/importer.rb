@@ -27,13 +27,17 @@ module DetentionData::Importer
       csv_data = CSV.read(f.path, {headers: true})
       csv_data = csv_data.map{|row|
         data = row.to_hash
+        data['interest'] = data['interest'] == 'true'
         data['offshore'] = data['offshore'] == 'true'
         data['misreported_self_harm'] = data['add_misreported_self_harm'] == 'true'
         data['occurred_on'] = Date.parse(data['occurred_on'])
         data['month'] = Date.new(data['occurred_on'].year, data['occurred_on'].month, 1)
-        # also create incidents hash
-        incidents[data['Incident Number']] = data
         data
+      }.select{|incident|
+        incident['interest']
+      }.each{|incident|
+        # also create incidents hash
+        incidents[incident['Incident Number']] = incident
       }
       jsonData = { data: incidents }
       jsonData[:months] = extract_months(csv_data)
@@ -208,7 +212,7 @@ module DetentionData::Importer
   end
 
   def self.add_interest(row)
-    row['incident_type'] && row['incident_type'] !~ /-minor|transfer|use of ob|failure/mi
+    row['incident_type'] && row['incident_type'] !~ /-minor|- minor|transfer|use of ob|failure|^media|complaint|injury - serious/mi
   end
 
   def self.extract_months(data)
