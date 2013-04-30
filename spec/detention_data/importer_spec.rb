@@ -16,7 +16,7 @@ describe DetentionData::Importer do
 
       it "should put the cleaned data in the output file" do
         clean_csv_data = CSV.read(cleaned_csv_path, { headers: true })
-        clean_csv_data.length.should == 8 
+        clean_csv_data.length.should == 10
       end
     end
   end
@@ -32,10 +32,9 @@ describe DetentionData::Importer do
       it "should put the cleaned data in the output file" do
         json = JSON.parse(IO.read(cleaned_json_path))
         incidents = json['data']
-        incidents.length.should == 10
+        incidents.length.should == 8
         incidents.should have_key('1-2PQQH5')
         incidents['1-2PQQH5']['misreported_self_harm'].should be_false 
-        incidents['1-2RG4E3']['offshore'].should be_true 
         months = json['months']
         months.first['month'].should == '2009-01-01'
         months.first['incidents'].sort.should == ["1-2PDPSN", "1-2PDPVF", "1-2PK97X"]

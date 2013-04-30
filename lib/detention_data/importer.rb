@@ -212,7 +212,9 @@ module DetentionData::Importer
   end
 
   def self.add_interest(row)
-    row['incident_type'] && row['incident_type'] !~ /-minor|- minor|transfer|use of ob|failure|^media|complaint|injury - serious/mi
+    row['incident_type'] &&
+    row['incident_type'] !~ /-minor|- minor|transfer|use of ob|failure|^media|complaint|injury - serious/mi &&
+    !(row['incident_type'] =~ /aggressive behaviour/ && row['Level'] == 'Minor')
   end
 
   def self.extract_months(data)
