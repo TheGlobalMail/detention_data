@@ -4,8 +4,8 @@ require 'optparse'
 require 'detention_data'
 
 if $*.length != 2
-  puts "Usage: import.rb input.csv output.csv"
+  puts "Usage: import.rb input.csv output.json"
   exit(1)
 end
 
-DetentionData::Importer.cleanCSV(*$*)
+DetentionData::Importer.cleanJSON(*$*)
