@@ -39,6 +39,21 @@ describe DetentionData::Importer do
     end
   end
 
+  describe ".cleanJS" do
+
+    context  "with a path to a csv file and an output file" do
+
+      let(:csv_path){  File.expand_path('../../fixtures/test.csv', __FILE__) }
+      let(:cleaned_js_path){  File.expand_path('../../fixtures/test_output.js', __FILE__) }
+      before{ DetentionData::Importer.cleanJS(csv_path, cleaned_js_path) }
+
+      it "should put the cleaned data in the output file" do
+        js = IO.read(cleaned_js_path)
+        js.should =~ /define\(\[/
+      end
+    end
+  end
+
   describe ".clean_row" do
 
     describe "['location']" do

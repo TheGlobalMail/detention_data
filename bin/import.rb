@@ -8,4 +8,4 @@ if $*.length != 2
   exit(1)
 end
 
-DetentionData::Importer.cleanJSON(*$*)
+DetentionData::Importer.cleanJS(*$*)

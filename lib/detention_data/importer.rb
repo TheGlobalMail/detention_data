@@ -30,8 +30,17 @@ module DetentionData::Importer
         data['misreported_self_harm'] = data['add_misreported_self_harm'] == 'true'
         data
       }
-      puts csv_data.first.inspect
-      output.write(JSON.dump(csv_data))
+      output.write(JSON.pretty_generate(csv_data))
+    end
+    output.close
+  end
+
+  def self.cleanJS(csv_path, cleaned_js_path)
+    output = File.open cleaned_js_path, 'w'
+    Tempfile.open('cleaned_json') do |f|
+      cleanJSON(csv_path, f.path)
+      json = IO.read(f.path)
+      output.write('define(' + json + ');')
     end
     output.close
   end
