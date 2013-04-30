@@ -49,7 +49,7 @@ describe DetentionData::Importer do
 
       it "should put the cleaned data in the output file" do
         js = IO.read(cleaned_js_path)
-        js.should =~ /define\(\[/
+        js.should =~ /define\(\{/
       end
     end
   end

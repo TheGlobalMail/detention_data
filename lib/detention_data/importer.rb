@@ -40,7 +40,7 @@ module DetentionData::Importer
     Tempfile.open('cleaned_json') do |f|
       cleanJSON(csv_path, f.path)
       json = IO.read(f.path)
-      output.write('define(' + json + ');')
+      output.write("define({\ndata: " + json + "\n});")
     end
     output.close
   end
