@@ -33,9 +33,9 @@ describe DetentionData::Importer do
         json = JSON.parse(IO.read(cleaned_json_path))
         incidents = json['data']
         incidents.length.should == 10
-        incidents.first['Incident Number'].should == '1-2PQQH5'
-        incidents.first['misreported_self_harm'].should be_false 
-        incidents.last['offshore'].should be_true 
+        incidents.should have_key('1-2PQQH5')
+        incidents['1-2PQQH5']['misreported_self_harm'].should be_false 
+        incidents['1-2RG4E3']['offshore'].should be_true 
         months = json['months']
         months.first['month'].should == '2009-01-01'
         months.first['incidents'].sort.should == ["1-2PDPSN", "1-2PDPVF", "1-2PK97X"]

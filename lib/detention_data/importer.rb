@@ -23,6 +23,7 @@ module DetentionData::Importer
     output = File.open cleaned_json_path, 'w'
     Tempfile.open('cleaned_csv') do |f|
       cleanCSV(csv_path, f.path)
+      incidents = {}
       csv_data = CSV.read(f.path, {headers: true})
       csv_data = csv_data.map{|row|
         data = row.to_hash
@@ -30,9 +31,11 @@ module DetentionData::Importer
         data['misreported_self_harm'] = data['add_misreported_self_harm'] == 'true'
         data['occurred_on'] = Date.parse(data['occurred_on'])
         data['month'] = Date.new(data['occurred_on'].year, data['occurred_on'].month, 1)
+        # also create incidents hash
+        incidents[data['Incident Number']] = data
         data
       }
-      jsonData = { data: csv_data }
+      jsonData = { data: incidents }
       jsonData[:months] = extract_months(csv_data)
       output.write(JSON.pretty_generate(jsonData))
     end
