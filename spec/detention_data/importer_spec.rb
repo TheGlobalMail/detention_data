@@ -15,9 +15,26 @@ describe DetentionData::Importer do
       before{ DetentionData::Importer.cleanCSV(csv_path, cleaned_csv_path) }
 
       it "should put the cleaned data in the output file" do
-        CSV.read(cleaned_csv_path, { headers: true }) do
-          clean_csv_data.length.should == 10
-        end
+        clean_csv_data = CSV.read(cleaned_csv_path, { headers: true })
+        clean_csv_data.length.should == 10
+      end
+    end
+  end
+
+  describe ".cleanJSON" do
+
+    context  "with a path to a csv file and an output file" do
+
+      let(:csv_path){  File.expand_path('../../fixtures/test.csv', __FILE__) }
+      let(:cleaned_json_path){  File.expand_path('../../fixtures/test_output.json', __FILE__) }
+      before{ DetentionData::Importer.cleanJSON(csv_path, cleaned_json_path) }
+
+      it "should put the cleaned data in the output file" do
+        json = JSON.parse(IO.read(cleaned_json_path))
+        json.length.should == 10
+        json.first['Incident Number'].should == '1-2PQQH5'
+        json.first['misreported_self_harm'].should be_false 
+        json.last['offshore'].should be_true 
       end
     end
   end

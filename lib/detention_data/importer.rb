@@ -1,4 +1,6 @@
 require 'csv'
+require 'tempfile'
+require 'json'
 
 module DetentionData::Importer
 
@@ -13,6 +15,25 @@ module DetentionData::Importer
         row = clean_row(row)
       end
     end
+    input.close
+    output.close
+  end
+
+  def self.cleanJSON(csv_path, cleaned_json_path)
+    output = File.open cleaned_json_path, 'w'
+    Tempfile.open('cleaned_csv') do |f|
+      cleanCSV(csv_path, f.path)
+      csv_data = CSV.read(f.path, {headers: true})
+      csv_data = csv_data.map{|row|
+        data = row.to_hash
+        data['offshore'] = data['offshore'] == 'true'
+        data['misreported_self_harm'] = data['add_misreported_self_harm'] == 'true'
+        data
+      }
+      puts csv_data.first.inspect
+      output.write(JSON.dump(csv_data))
+    end
+    output.close
   end
 
   def self.clean_row(row)
