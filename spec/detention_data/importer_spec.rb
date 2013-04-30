@@ -133,8 +133,8 @@ describe DetentionData::Importer do
 
     describe "['occured_on']" do
 
-      context "with an australian formatted date" do
-        let!(:original_row){ {'Occurred On' => '03/09/2012' } } # U.S. style
+      context "with an YYYY-MM-DD formatted date" do
+        let!(:original_row){ {'Occurred On' => '2012-03-09' } }
         subject{ DetentionData::Importer.clean_row(original_row)['occurred_on'] }
         it{ should == Date.new(2012, 3, 9) }
       end

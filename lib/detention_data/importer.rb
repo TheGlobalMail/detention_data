@@ -99,7 +99,7 @@ module DetentionData::Importer
   end
 
   def self.add_occurrend_on(date)
-    date && Date.strptime(date, '%m/%d/%Y')
+    date && Date.parse(date)
   end
 
   def self.add_facility_type(location)
