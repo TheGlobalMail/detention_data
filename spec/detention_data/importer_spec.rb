@@ -31,10 +31,14 @@ describe DetentionData::Importer do
 
       it "should put the cleaned data in the output file" do
         json = JSON.parse(IO.read(cleaned_json_path))
-        json.length.should == 10
-        json.first['Incident Number'].should == '1-2PQQH5'
-        json.first['misreported_self_harm'].should be_false 
-        json.last['offshore'].should be_true 
+        incidents = json['data']
+        incidents.length.should == 10
+        incidents.first['Incident Number'].should == '1-2PQQH5'
+        incidents.first['misreported_self_harm'].should be_false 
+        incidents.last['offshore'].should be_true 
+        months = json['months']
+        months.first['month'].should == '2009-01-01'
+        months.first['incidents'].sort.should == ["1-2PDPSN", "1-2PDPVF", "1-2PK97X"]
       end
     end
   end

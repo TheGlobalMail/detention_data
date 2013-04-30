@@ -28,9 +28,13 @@ module DetentionData::Importer
         data = row.to_hash
         data['offshore'] = data['offshore'] == 'true'
         data['misreported_self_harm'] = data['add_misreported_self_harm'] == 'true'
+        data['occurred_on'] = Date.parse(data['occurred_on'])
+        data['month'] = Date.new(data['occurred_on'].year, data['occurred_on'].month, 1)
         data
       }
-      output.write(JSON.pretty_generate(csv_data))
+      jsonData = { data: csv_data }
+      jsonData[:months] = extract_months(csv_data)
+      output.write(JSON.pretty_generate(jsonData))
     end
     output.close
   end
@@ -40,7 +44,7 @@ module DetentionData::Importer
     Tempfile.open('cleaned_json') do |f|
       cleanJSON(csv_path, f.path)
       json = IO.read(f.path)
-      output.write("define({\ndata: " + json + "\n});")
+      output.write('define(' + json + ');')
     end
     output.close
   end
@@ -63,7 +67,6 @@ module DetentionData::Importer
   protected
 
   def self.add_new_headers(row)
-    row['Version'] = 'Version2'
     new_headers.each do |header|
       row[header] = header
     end
@@ -72,7 +75,7 @@ module DetentionData::Importer
   def self.new_headers()
     ['incident_type', 'location', 'incident_category', 'offshore',
       'occurred_on', 'facility_type', 'misreported_self_harm',
-      'incident_references', 'contraband_category'
+      'incident_references', 'contraband_category', 'interest'
     ]
   end
 
@@ -203,6 +206,17 @@ module DetentionData::Importer
 
   def self.add_interest(row)
     row['incident_type'] && row['incident_type'] !~ /-minor|transfer|use of ob|failure/mi
+  end
+
+  def self.extract_months(data)
+    months = {}
+    data.each do |incident|
+      month = incident['month']
+      months[month] ||= { month: month, incidents: [] }
+      months[month][:incidents] << incident['Incident Number']
+    end
+    # return as sorted list by month
+    months.values.sort_by{|m| m[:month] }
   end
 
 end
