@@ -6,11 +6,12 @@ require 'detention_data'
 
 describe DetentionData::Importer do
 
+  let(:csv_path){  File.expand_path('../../fixtures/test.csv', __FILE__) }
+
   describe ".cleanCSV" do
 
     context  "with a path to a csv file and an output file" do
 
-      let(:csv_path){  File.expand_path('../../fixtures/test.csv', __FILE__) }
       let(:cleaned_csv_path){  File.expand_path('../../fixtures/test_output.csv', __FILE__) }
       before{ DetentionData::Importer.cleanCSV(csv_path, cleaned_csv_path) }
 
@@ -23,21 +24,41 @@ describe DetentionData::Importer do
 
   describe ".cleanJSON" do
 
-    context  "with a path to a csv file and an output file" do
+    context  "with a path to a csv file, a csv of events and an output file" do
 
-      let(:csv_path){  File.expand_path('../../fixtures/test.csv', __FILE__) }
       let(:cleaned_json_path){  File.expand_path('../../fixtures/test_output.json', __FILE__) }
-      before{ DetentionData::Importer.cleanJSON(csv_path, cleaned_json_path) }
+      let(:events_path){  File.expand_path('../../fixtures/events.csv', __FILE__) }
+      before{ DetentionData::Importer.cleanJSON(csv_path, events_path, cleaned_json_path) }
+      let(:json){ JSON.parse(IO.read(cleaned_json_path)) }
 
-      it "should put the cleaned data in the output file" do
-        json = JSON.parse(IO.read(cleaned_json_path))
+      it "should put the cleaned incidents data in the output file" do
         incidents = json['data']
-        incidents.length.should == 8
         incidents.should have_key('1-2PQQH5')
+        incidents['1-2PQQH5']['event_type'].should == 'incident'
         incidents['1-2PQQH5']['misreported_self_harm'].should be_false 
         months = json['months']
         months.first['month'].should == '2009-01-01'
         months.first['incidents'].sort.should == ["1-2PDPSN", "1-2PDPVF", "1-2PK97X"]
+      end
+
+      it "should filter out all uninteresting incidents" do
+        json['data'].select{|incident|
+          incident['event_type'] == 'incident' && !incident['interest']
+        }.should be_empty
+      end
+
+      it "should include events" do
+        incidents = json['data']
+        incidents.should have_key('22015')
+        incidents['22015']['event_type'].should == 'event'
+      end
+
+      it "should include events correctly ordered in months" do
+        months = json['months']
+        month = months.detect{|month|
+          month['month'] == '2009-12-01'
+        }
+        month['incidents'].should == ["22015", "1-2PQQHC"]
       end
     end
   end
@@ -46,9 +67,9 @@ describe DetentionData::Importer do
 
     context  "with a path to a csv file and an output file" do
 
-      let(:csv_path){  File.expand_path('../../fixtures/test.csv', __FILE__) }
       let(:cleaned_js_path){  File.expand_path('../../fixtures/test_output.js', __FILE__) }
-      before{ DetentionData::Importer.cleanJS(csv_path, cleaned_js_path) }
+      let(:events_path){  File.expand_path('../../fixtures/events.csv', __FILE__) }
+      before{ DetentionData::Importer.cleanJS(csv_path, events_path, cleaned_js_path) }
 
       it "should put the cleaned data in the output file" do
         js = IO.read(cleaned_js_path)

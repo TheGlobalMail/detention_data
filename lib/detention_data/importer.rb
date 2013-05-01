@@ -19,37 +19,26 @@ module DetentionData::Importer
     output.close
   end
 
-  def self.cleanJSON(csv_path, cleaned_json_path)
+  def self.cleanJSON(csv_path, events_path, cleaned_json_path)
     output = File.open cleaned_json_path, 'w'
     Tempfile.open('cleaned_csv') do |f|
       cleanCSV(csv_path, f.path)
-      incidents = {}
-      csv_data = CSV.read(f.path, {headers: true})
-      csv_data = csv_data.map{|row|
-        data = row.to_hash
-        data['interest'] = data['interest'] == 'true'
-        data['offshore'] = data['offshore'] == 'true'
-        data['misreported_self_harm'] = data['add_misreported_self_harm'] == 'true'
-        data['occurred_on'] = Date.parse(data['occurred_on'])
-        data['month'] = Date.new(data['occurred_on'].year, data['occurred_on'].month, 1)
-        data
-      }.select{|incident|
-        incident['interest']
-      }.each{|incident|
-        # also create incidents hash
-        incidents[incident['Incident Number']] = incident
+      incidents = extract_interesting_incidents(CSV.read(f.path, {headers: true}))
+      events = extract_events(CSV.read(events_path, {headers: true}))
+      all_incidents = incidents + events
+      jsonData = {
+        data: hash_by_id(all_incidents),
+        months: extract_months(all_incidents)
       }
-      jsonData = { data: incidents }
-      jsonData[:months] = extract_months(csv_data)
       output.write(JSON.pretty_generate(jsonData))
     end
     output.close
   end
 
-  def self.cleanJS(csv_path, cleaned_js_path)
+  def self.cleanJS(csv_path, events_path, cleaned_js_path)
     output = File.open cleaned_js_path, 'w'
     Tempfile.open('cleaned_json') do |f|
-      cleanJSON(csv_path, f.path)
+      cleanJSON(csv_path, events_path, f.path)
       json = IO.read(f.path)
       output.write('define(' + json + ');')
     end
@@ -218,14 +207,58 @@ module DetentionData::Importer
   end
 
   def self.extract_months(data)
-    months = {}
+    month_lookup = {}
     data.each do |incident|
+      incident['month'] = Date.new(incident['occurred_on'].year, incident['occurred_on'].month, 1)
       month = incident['month']
-      months[month] ||= { month: month, incidents: [] }
-      months[month][:incidents] << incident['Incident Number']
+      month_lookup[month] ||= { month: month, incidents: [] }
+      month_lookup[month][:incidents] << incident
     end
     # return as sorted list by month
-    months.values.sort_by{|m| m[:month] }
+    months = month_lookup.values.sort_by{|m| m[:month] }
+    # sort the incidents within each month by date and only return the id
+    months.each do |month|
+      month[:incidents] = month[:incidents]
+        .sort_by{|incident|
+          incident['occurred_on']
+        }.map{|incident| 
+          incident['id']
+        }
+    end
+    months
+  end
+
+  def self.extract_interesting_incidents(csv_data)
+    csv_data.map{|row|
+      data = row.to_hash
+      data['id'] = data['Incident Number']
+      data['event_type'] = 'incident'
+      data['interest'] = data['interest'] == 'true'
+      data['offshore'] = data['offshore'] == 'true'
+      data['misreported_self_harm'] = data['add_misreported_self_harm'] == 'true'
+      data['occurred_on'] = Date.parse(data['occurred_on'])
+      data
+    }.select{|incident|
+      incident['interest']
+    }
+  end
+
+  # Convert the csv row to an array of hashes
+  def self.extract_events(csv_data)
+    csv_data.map{|row|
+      event = row.to_hash
+      event['occurred_on'] = Date.parse(event['occurred_on'])
+      event['event_type'] = 'event'
+      event
+    }
+  end
+  
+  def self.hash_by_id(incidents)
+    hash = {}
+    incidents.each do |incident|
+      hash[incident['id']] = incident
+    end
+    hash
   end
 
 end

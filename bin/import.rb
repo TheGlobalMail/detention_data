@@ -3,8 +3,8 @@ $:.unshift(File.expand_path('../../lib', __FILE__))
 require 'optparse'
 require 'detention_data'
 
-if $*.length != 2
-  puts "Usage: import.rb input.csv output.json"
+if $*.length != 3
+  puts "Usage: import.rb incidents.csv events.csv combined_amd_file.js"
   exit(1)
 end
 
