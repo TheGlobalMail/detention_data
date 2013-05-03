@@ -90,7 +90,7 @@ module DetentionData::Importer
   end
 
   def self.remove_null(value)
-    return value && value.gsub(/ *null/i, '')
+    return value && value.gsub(/ *null/i, '').gsub(/--/, '-');
   end
 
   def self.clean_incident_type(value)
