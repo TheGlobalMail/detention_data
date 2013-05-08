@@ -57,6 +57,9 @@ module DetentionData::Importer
     row['incident_references'] = add_incident_references(row)
     row['contraband_category'] = add_contraband_category(row)
     row['interest'] = add_interest(row)
+    summary = row['Summary'] || '';
+    row['words_in_summary'] = summary.split(/\s/).length;
+    row['characters_in_summary'] = summary.length;
     row
   end
 

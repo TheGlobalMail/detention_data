@@ -293,5 +293,27 @@ describe DetentionData::Importer do
         end
       end
     end
+
+    describe "['words_in_summary']" do
+
+      context "with a summary made up of multiple words" do
+
+        let!(:original_row){ {'Incident Number' => '1-2PQQH5', 
+          'Summary' => 'Refers to some words' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['words_in_summary'] }
+        it{ should == 4  }
+      end
+    end
+
+    describe "['characters_in_summary']" do
+
+      context "with a summary made up of multiple words" do
+
+        let!(:original_row){ {'Incident Number' => '1-2PQQH5', 
+          'Summary' => 'Refers to some words' } }
+        subject{ DetentionData::Importer.clean_row(original_row)['characters_in_summary'] }
+        it{ should == 20  }
+      end
+    end
   end
 end
