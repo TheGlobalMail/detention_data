@@ -233,16 +233,19 @@ module DetentionData::Importer
 
   def self.extract_interesting_incidents(csv_data)
     csv_data.map{|row|
+      reduced_data = {}
       data = row.to_hash
-      data['id'] = data['Incident Number']
-      data['event_type'] = 'incident'
-      data['interest'] = data['interest'] == 'true'
-      data['offshore'] = data['offshore'] == 'true'
-      data['misreported_self_harm'] = data['add_misreported_self_harm'] == 'true'
-      data['occurred_on'] = Date.parse(data['occurred_on'])
-      data
+      reduced_data['id'] = data['Incident Number']
+      reduced_data['event_type'] = 'incident'
+      reduced_data['incident_type'] = data['incident_Type']
+      reduced_data['Level'] = data['Level']
+      reduced_data['Summary'] = data['Summary']
+      reduced_data['location'] = data['location']
+      reduced_data['incident_category'] = data['incident_category']
+      reduced_data['occurred_on'] = Date.parse(data['occurred_on'])
+      reduced_data
     }.select{|incident|
-      incident['interest']
+      true #incident['interest']
     }
   end
 
