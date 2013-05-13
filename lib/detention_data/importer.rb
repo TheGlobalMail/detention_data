@@ -237,7 +237,7 @@ module DetentionData::Importer
       data = row.to_hash
       reduced_data['id'] = data['Incident Number']
       reduced_data['event_type'] = 'incident'
-      reduced_data['incident_type'] = data['incident_Type']
+      reduced_data['incident_type'] = data['incident_type']
       reduced_data['Level'] = data['Level']
       reduced_data['Summary'] = data['Summary']
       reduced_data['location'] = data['location']
