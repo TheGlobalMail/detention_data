@@ -1,6 +1,7 @@
 require 'csv'
 require 'tempfile'
 require 'json'
+require 'open-uri'
 
 module DetentionData::Importer
 
@@ -24,6 +25,7 @@ module DetentionData::Importer
     Tempfile.open('cleaned_csv') do |f|
       cleanCSV(csv_path, f.path)
       incidents = extract_interesting_incidents(CSV.read(f.path, {headers: true}))
+      incidents = updateWithDetentionLogsData(incidents)
       events = extract_events(CSV.read(events_path, {headers: true}))
       all_incidents = incidents + events
       jsonData = {
@@ -64,6 +66,27 @@ module DetentionData::Importer
   end
 
   protected
+
+  def self.downloadDetentionLogsData()
+    api = ENV['DETENTION_LOGS_API']
+    raise "No uri for api" unless api
+    JSON.parse(open(api).read)
+  end
+
+  def self.updateWithDetentionLogsData(incidents)
+    dententionLogsData = downloadDetentionLogsData
+    incidents.each do |incident|
+      dLIncident = dententionLogsData.detect{|dl| dl['incident_number'] == incident['id']} 
+      if dLIncident
+        incident['detailed_report'] = !!dLIncident['detailed_report_file_name']
+        # get more accurate date
+        incident['occurred_on'] = Time.parse(dLIncident['occured_on'])
+      else
+        incident['occurred_on'] = Date.parse(incident['occurred_on']).to_time
+      end
+    end
+    incidents
+  end
 
   def self.add_new_headers(row)
     new_headers.each do |header|
@@ -220,7 +243,7 @@ module DetentionData::Importer
     months.each do |month|
       month[:incidents] = month[:incidents]
         .sort_by{|incident|
-          incident['occurred_on']
+          incident['occurred_on'].to_time
         }.map{|incident| 
           incident['id']
         }
@@ -239,7 +262,7 @@ module DetentionData::Importer
       reduced_data['Summary'] = data['Summary']
       reduced_data['location'] = data['location']
       reduced_data['incident_category'] = data['incident_category']
-      reduced_data['occurred_on'] = Date.parse(data['occurred_on'])
+      reduced_data['occurred_on'] = data['occurred_on']
       reduced_data
     }.select{|incident|
       true #incident['interest']

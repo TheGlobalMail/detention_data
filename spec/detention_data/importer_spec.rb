@@ -24,10 +24,11 @@ describe DetentionData::Importer do
 
   describe ".cleanJSON" do
 
-    context  "with a path to a csv file, a csv of events and an output file" do
+    context  "with a path to a csv file, a csv of events and an output file, and data from Detention Logs" do
 
       let(:cleaned_json_path){  File.expand_path('../../fixtures/test_output.json', __FILE__) }
       let(:events_path){  File.expand_path('../../fixtures/events.csv', __FILE__) }
+      let!(:detention_logs_json){ ENV['DETENTION_LOGS_API'] = File.expand_path('../../fixtures/all.json', __FILE__) }
       before{ DetentionData::Importer.cleanJSON(csv_path, events_path, cleaned_json_path) }
       let(:json){ JSON.parse(IO.read(cleaned_json_path)) }
 
@@ -60,6 +61,15 @@ describe DetentionData::Importer do
         }
         month['incidents'].should == ["22015", "1-2PQQHC"]
       end
+
+      it "should use the detailed_report and occurred_on data from the Detention Logs api" do
+        incidents = json['data']
+        incidents.should have_key('1-79FB6E')
+        incidents['1-79FB6E']['detailed_report'].should be_true
+        occurred_on = Time.parse(incidents['1-79FB6E']['occurred_on'])
+        occurred_on.hour.should == 15
+        occurred_on.min.should == 45
+      end
     end
   end
 
@@ -69,6 +79,7 @@ describe DetentionData::Importer do
 
       let(:cleaned_js_path){  File.expand_path('../../fixtures/test_output.js', __FILE__) }
       let(:events_path){  File.expand_path('../../fixtures/events.csv', __FILE__) }
+      let!(:detention_logs_json){ ENV['DETENTION_LOGS_API'] = File.expand_path('../../fixtures/all.json', __FILE__) }
       before{ DetentionData::Importer.cleanJS(csv_path, events_path, cleaned_js_path) }
 
       it "should put the cleaned data in the output file" do
