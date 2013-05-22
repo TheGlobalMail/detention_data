@@ -273,7 +273,11 @@ module DetentionData::Importer
   def self.extract_events(csv_data)
     csv_data.map{|row|
       event = row.to_hash
-      event['occurred_on'] = Date.parse(event['occurred_on'])
+      if (event['occurred_on'] =~ /\d+\/\d+\/\d+ \d+:\d+/)
+        event['occurred_on'] = Time.strptime(event['occurred_on'], '%d/%m/%y %H:%M')
+      else
+        event['occurred_on'] = Date.strptime(event['occurred_on'], '%d/%m/%y')
+      end
       event['event_type'] = 'event'
       event
     }
